@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Build Sheet</title>
+<meta name="theme-color" content="#1B1D1F">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<!-- ============================================================
+     SETUP: put your Supabase project values here (see README.md)
+     ============================================================ -->
+<script>
+  window.SUPABASE_URL = "https://gkdbhedeczgstzsrlawz.supabase.co";
+  window.SUPABASE_ANON_KEY = "sb_publishable_3X0bT9ZrOq0LYN3Xul_cJQ_coo1S837";
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#1B1D1F;
+    --surface:#232629;
+    --surface-raised:#2C3033;
+    --ink:#EDEAE2;
+    --ink-dim:#9BA1A6;
+    --accent:#E8A33D;
+    --accent-2:#5B8AA6;
+    --danger:#C24A3E;
+    --good:#79996A;
+    --border:#3A3F43;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    -webkit-tap-highlight-color:transparent;
+  }
+  h1,h2,h3,.display{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    font-weight:600;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  ::selection{background:var(--accent);color:#1B1D1F;}
+  a{color:var(--accent-2);}
+  button{font-family:inherit;cursor:pointer;}
+  input,textarea,select{font-family:inherit;}
+
+  #app{min-height:100vh;display:flex;flex-direction:column;}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 18px;
+    background:var(--surface);
+    border-bottom:2px solid var(--accent);
+    position:sticky;top:0;z-index:20;
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{
+    width:34px;height:34px;border-radius:4px;
+    background:var(--accent);color:#1B1D1F;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Oswald',sans-serif;font-weight:700;font-size:16px;
+    flex-shrink:0;
+  }
+  .brand-name{font-size:15px;letter-spacing:0.06em;}
+  .brand-sub{font-size:10px;color:var(--ink-dim);letter-spacing:0.08em;margin-top:1px;}
+  .topbar-right{display:flex;align-items:center;gap:12px;}
+  .role-tag{
+    font-family:'JetBrains Mono',monospace;font-size:10px;
+    padding:3px 8px;border-radius:3px;letter-spacing:0.05em;
+    border:1px solid var(--border);color:var(--ink-dim);
+  }
+  .btn-plain{
+    background:none;border:none;color:var(--ink-dim);
+    font-size:13px;padding:6px;
+  }
+  .btn-plain:hover{color:var(--ink);}
+
+  main{flex:1;padding:18px;max-width:900px;margin:0 auto;width:100%;padding-bottom:80px;}
+
+  /* ---------- buttons ---------- */
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--accent);color:#1B1D1F;
+    border:none;border-radius:5px;
+    padding:10px 16px;font-weight:600;font-size:13px;
+    letter-spacing:0.02em;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-secondary{
+    background:transparent;color:var(--ink);
+    border:1px solid var(--border);
+  }
+  .btn-danger{background:var(--danger);color:#fff;}
+  .btn-sm{padding:6px 10px;font-size:12px;}
+  .btn-block{width:100%;justify-content:center;}
+
+  /* ---------- cards / lists ---------- */
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:16px;
+  }
+  .list-item{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:14px 16px;margin-bottom:10px;
+    transition:border-color .15s;
+  }
+  .list-item:active{border-color:var(--accent);}
+  .li-name{font-weight:600;font-size:15px;}
+  .li-sub{font-size:12px;color:var(--ink-dim);margin-top:2px;}
+  .chevron{color:var(--ink-dim);font-size:18px;}
+
+  .status-badge{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:0.05em;text-transform:uppercase;
+    padding:4px 8px;border-radius:20px;border:1px solid;
+  }
+  .status-Teardown{color:#C79B6E;border-color:#C79B6E;}
+  .status-Machining{color:var(--accent-2);border-color:var(--accent-2);}
+  .status-Assembly{color:var(--accent);border-color:var(--accent);}
+  .status-Dyno{color:#B36FC4;border-color:#B36FC4;}
+  .status-Complete{color:var(--good);border-color:var(--good);}
+
+  .section-head{
+    display:flex;align-items:center;justify-content:space-between;
+    margin:22px 0 12px;
+  }
+  .section-head h2{font-size:15px;margin:0;color:var(--ink);}
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;font-size:11px;
+    color:var(--accent);letter-spacing:0.08em;margin-bottom:4px;
+    display:block;
+  }
+  .empty{
+    text-align:center;padding:36px 20px;color:var(--ink-dim);
+    font-size:13px;border:1px dashed var(--border);border-radius:8px;
+  }
+
+  /* ---------- forms ---------- */
+  label{font-size:12px;color:var(--ink-dim);display:block;margin:12px 0 5px;letter-spacing:0.02em;}
+  input[type=text],input[type=email],input[type=password],input[type=date],textarea,select{
+    width:100%;background:var(--surface-raised);
+    border:1px solid var(--border);border-radius:6px;
+    padding:10px 12px;color:var(--ink);font-size:14px;
+  }
+  textarea{resize:vertical;min-height:70px;}
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:0;}
+
+  /* ---------- modal ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.6);
+    display:flex;align-items:flex-end;justify-content:center;
+    z-index:50;
+  }
+  @media(min-width:600px){.overlay{align-items:center;}}
+  .modal{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:12px 12px 0 0;padding:20px;
+    width:100%;max-width:480px;max-height:88vh;overflow-y:auto;
+  }
+  @media(min-width:600px){.modal{border-radius:12px;}}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+  .modal-actions{display:flex;gap:10px;margin-top:18px;}
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px;overflow-x:auto;}
+  .tab{
+    background:none;border:none;color:var(--ink-dim);
+    padding:10px 4px;font-size:13px;font-weight:600;
+    letter-spacing:0.03em;text-transform:uppercase;
+    border-bottom:2px solid transparent;margin-right:18px;
+    white-space:nowrap;
+  }
+  .tab.active{color:var(--accent);border-color:var(--accent);}
+
+  /* ---------- spec sheet ---------- */
+  .spec-section{
+    border:1px solid var(--border);border-radius:8px;
+    background:var(--surface);margin-bottom:16px;overflow:hidden;
+  }
+  .spec-section-head{
+    padding:10px 14px;background:var(--surface-raised);
+    font-family:'JetBrains Mono',monospace;font-size:11px;
+    color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;
+    border-bottom:1px solid var(--border);
+  }
+  .spec-section-body{padding:12px 14px;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;}
+  .field-row.cols4{grid-template-columns:repeat(4,1fr);}
+  .field-row.cols2{grid-template-columns:1fr 1fr;}
+  @media(max-width:480px){.field-row.cols4{grid-template-columns:repeat(2,1fr);}}
+  .field{margin-bottom:2px;}
+  .field label{margin:0 0 4px;}
+  .field .unit{font-size:10px;color:var(--ink-dim);margin-left:4px;}
+  .field input{padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;}
+  .col-label{
+    text-align:center;font-family:'JetBrains Mono',monospace;
+    font-size:11px;color:var(--ink-dim);margin-bottom:4px;
+  }
+
+  .vlift-table{width:100%;border-collapse:collapse;}
+  .vlift-table th{
+    font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent-2);
+    text-transform:uppercase;letter-spacing:0.05em;padding:6px 4px;text-align:left;
+    border-bottom:1px solid var(--border);
+  }
+  .vlift-table td{padding:3px;border-bottom:1px solid var(--border);}
+  .vlift-table input{
+    background:none;border:none;padding:5px 4px;
+    font-family:'JetBrains Mono',monospace;font-size:12px;width:100%;
+  }
+  .vlift-table input:focus{outline:none;background:var(--surface-raised);}
+  .vlift-wrap{overflow-x:auto;}
+  .icon-btn{
+    background:none;border:none;color:var(--ink-dim);
+    font-size:15px;padding:4px 6px;
+  }
+  .icon-btn:hover{color:var(--danger);}
+
+  .save-bar{
+    position:sticky;bottom:0;background:var(--bg);
+    padding:12px 0;margin-top:4px;
+    display:flex;align-items:center;gap:10px;
+    border-top:1px solid var(--border);
+  }
+  .save-status{font-size:12px;color:var(--ink-dim);}
+
+  /* ---------- notes ---------- */
+  .note-card{
+    background:var(--surface);border:1px solid var(--border);
+    border-left:3px solid var(--accent-2);
+    border-radius:6px;padding:12px 14px;margin-bottom:10px;
+  }
+  .note-meta{font-size:11px;color:var(--ink-dim);margin-top:6px;font-family:'JetBrains Mono',monospace;}
+  .note-body{font-size:14px;white-space:pre-wrap;}
+
+  /* ---------- photos ---------- */
+  .photo-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));
+    gap:10px;
+  }
+  .photo-thumb{
+    aspect-ratio:1;border-radius:8px;overflow:hidden;
+    border:1px solid var(--border);position:relative;background:var(--surface-raised);
+  }
+  .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .photo-cap{
+    position:absolute;bottom:0;left:0;right:0;
+    background:linear-gradient(transparent,rgba(0,0,0,0.75));
+    color:#fff;font-size:10px;padding:14px 6px 5px;
+  }
+  .photo-full-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.92);
+    display:flex;align-items:center;justify-content:center;
+    z-index:60;padding:20px;
+  }
+  .photo-full-overlay img{max-width:100%;max-height:85vh;border-radius:6px;}
+
+  /* ---------- login ---------- */
+  .login-wrap{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:20px;
+  }
+  .login-card{width:100%;max-width:360px;}
+  .login-logo{text-align:center;margin-bottom:24px;}
+  .login-logo .brand-mark{margin:0 auto 12px;width:52px;height:52px;font-size:22px;border-radius:8px;}
+  .login-error{
+    color:var(--danger);font-size:12px;margin-top:10px;
+    display:none;
+  }
+
+  .breadcrumb{font-size:12px;color:var(--ink-dim);margin-bottom:4px;background:none;border:none;padding:0;}
+  .breadcrumb:hover{color:var(--accent);}
+  .crumbs{margin-bottom:6px;}
+  .crumbs span{color:var(--ink-dim);margin:0 4px;font-size:12px;}
+
+  .loading{text-align:center;padding:40px;color:var(--ink-dim);font-size:13px;}
+  .fab-add{
+    position:fixed;right:18px;bottom:18px;z-index:15;
+    width:52px;height:52px;border-radius:50%;
+    background:var(--accent);color:#1B1D1F;border:none;
+    font-size:26px;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 14px rgba(0,0,0,0.4);
+  }
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">Loading…</div></div>
+
+<script>
+/* ============================================================
+   SUPABASE CLIENT
+   ============================================================ */
+const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+
+/* ============================================================
+   APP STATE / ROUTER
+   Hierarchy: customers -> engines (per customer) -> rebuilds
+   (dated instances of that engine) -> spec sheet / notes / photos
+   ============================================================ */
+const state = {
+  session: null,
+  profile: null,
+  view: 'loading',       // loading | login | customers | customer | engine | rebuild | search
+  customerId: null,
+  engineId: null,
+  rebuildId: null,
+  rebuildTab: 'sheet',    // sheet | notes | photos
+};
+
+const $app = document.getElementById('app');
+function h(html){ $app.innerHTML = html; }
+function esc(s){ return (s??'').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtDate(d){ if(!d) return ''; return new Date(d).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}); }
+function fmtDateTime(d){ if(!d) return ''; return new Date(d).toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); }
+function v(x){ return x==null ? '' : x; }
+
+async function init(){
+  const { data:{ session } } = await sb.auth.getSession();
+  state.session = session;
+  if(session){ await loadProfile(); } else { state.view='login'; render(); }
+  sb.auth.onAuthStateChange((_event, session) => {
+    state.session = session;
+    if(!session){ state.profile=null; state.view='login'; render(); }
+  });
+}
+
+async function loadProfile(){
+  const { data, error } = await sb.from('profiles').select('*').eq('id', state.session.user.id).single();
+  if(error || !data){ h(`<div class="loading">Couldn't load your account. Try refreshing, or contact the shop.</div>`); return; }
+  state.profile = data;
+  if(data.role === 'admin'){
+    state.view = 'customers';
+  } else {
+    state.view = 'customer';
+    state.customerId = data.customer_id;
+    if(!data.customer_id){
+      h(`<div class="login-wrap"><div class="card" style="max-width:360px;text-align:center;">
+        <p>Your login works, but the shop hasn't linked your account to a customer profile yet. Check back soon, or give them a call.</p>
+        <button class="btn btn-secondary" style="margin-top:12px" onclick="signOut()">Sign out</button>
+      </div></div>`);
+      return;
+    }
+  }
+  render();
+}
+
+function signOut(){ sb.auth.signOut(); }
+window.signOut = signOut;
+
+/* ============================================================
+   RENDER ROOT
+   ============================================================ */
+function render(){
+  if(state.view === 'login') return renderLogin();
+  renderShell();
+}
+
+function topbar(){
+  const isAdmin = state.profile?.role === 'admin';
+  return `
+  <div class="topbar">
+    <div class="brand" style="cursor:pointer" onclick="goHome()">
+      <div class="brand-mark">EB</div>
+      <div>
+        <div class="brand-name">BUILD SHEET</div>
+        <div class="brand-sub">${isAdmin ? 'SHOP ADMIN' : 'CUSTOMER VIEW'}</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      ${isAdmin ? `<button class="btn-plain" onclick="openSearch()" title="Search by engine number" style="font-size:16px;">🔍</button>` : ''}
+      <span class="role-tag">${esc(state.profile?.email||'')}</span>
+      <button class="btn-plain" onclick="signOut()" title="Sign out">⏻</button>
+    </div>
+  </div>`;
+}
+function openSearch(){ state.view='search'; render(); }
+window.openSearch = openSearch;
+function goHome(){
+  if(state.profile.role==='admin'){ state.view='customers'; }
+  else { state.view='customer'; }
+  render();
+}
+window.goHome = goHome;
+
+function renderShell(){
+  h(`<div>${topbar()}<main id="main"><div class="loading">Loading…</div></main></div>`);
+  const main = document.getElementById('main');
+  if(state.view === 'customers') return renderCustomerList(main);
+  if(state.view === 'customer') return renderEngineList(main, state.customerId);
+  if(state.view === 'engine') return renderRebuildList(main, state.engineId);
+  if(state.view === 'rebuild') return renderRebuildDetail(main, state.rebuildId);
+  if(state.view === 'search') return renderSearch(main);
+}
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+function renderLogin(){
+  h(`
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="brand-mark">EB</div>
+        <h1 style="font-size:18px;margin:0 0 4px;">Build Sheet</h1>
+        <div style="font-size:12px;color:var(--ink-dim);letter-spacing:0.05em;">ENGINE REBUILD TRACKER</div>
+      </div>
+      <div class="card">
+        <label>Email</label>
+        <input type="email" id="login-email" autocomplete="username" placeholder="you@example.com">
+        <label>Password</label>
+        <input type="password" id="login-pass" autocomplete="current-password" placeholder="••••••••">
+        <button class="btn btn-block" style="margin-top:18px" onclick="doLogin()">Sign in</button>
+        <div class="login-error" id="login-error"></div>
+      </div>
+    </div>
+  </div>`);
+  document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+}
+async function doLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display='none';
+  if(!email || !password){ errEl.textContent='Enter your email and password.'; errEl.style.display='block'; return; }
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){ errEl.textContent = error.message; errEl.style.display='block'; return; }
+  state.session = data.session;
+  h(`<div class="loading">Signing in…</div>`);
+  await loadProfile();
+}
+window.doLogin = doLogin;
+
+/* ============================================================
+   ADMIN: CUSTOMER LIST
+   ============================================================ */
+async function renderCustomerList(main){
+  const { data: customers, error } = await sb.from('customers').select('*').order('name');
+  if(error){ main.innerHTML = `<div class="empty">Couldn't load customers.<br><span class="mono" style="font-size:11px">${esc(error.message)}</span></div>`; return; }
+
+  main.innerHTML = `
+    <span class="eyebrow">SHOP</span>
+    <h2 style="margin:0 0 14px;font-size:20px;">Customers</h2>
+    <div id="customer-list">
+      ${customers.length ? customers.map(c => `
+        <div class="list-item" onclick="openCustomer('${c.id}')">
+          <div>
+            <div class="li-name">${esc(c.name)}</div>
+            <div class="li-sub">${esc(c.phone||c.email||'No contact info')}</div>
+          </div>
+          <div class="chevron">›</div>
+        </div>
+      `).join('') : `<div class="empty">No customers yet. Tap + to add your first one.</div>`}
+    </div>
+    <button class="fab-add" onclick="openCustomerForm()" title="Add customer">+</button>
+  `;
+}
+function openCustomer(id){ state.view='customer'; state.customerId=id; render(); }
+window.openCustomer = openCustomer;
+
+function openCustomerForm(){
+  showModal(`
+    <div class="modal-head"><h3 style="margin:0;font-size:16px;">Add customer</h3></div>
+    <label>Name *</label><input type="text" id="f-name" placeholder="Full name">
+    <label>Phone</label><input type="text" id="f-phone" placeholder="0400 000 000">
+    <label>Email</label><input type="email" id="f-email" placeholder="customer@example.com">
+    <label>Notes</label><textarea id="f-notes" placeholder="Anything worth remembering about this customer"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal()">Cancel</button>
+      <button class="btn" style="flex:1" onclick="saveCustomer()">Save</button>
+    </div>
+  `);
+}
+window.openCustomerForm = openCustomerForm;
+async function saveCustomer(){
+  const name = document.getElementById('f-name').value.trim();
+  if(!name){ alert('Name is required.'); return; }
+  const payload = {
+    name,
+    phone: document.getElementById('f-phone').value.trim() || null,
+    email: document.getElementById('f-email').value.trim() || null,
+    notes: document.getElementById('f-notes').value.trim() || null,
+  };
+  const { error } = await sb.from('customers').insert(payload);
+  if(error){ alert(error.message); return; }
+  closeModal();
+  renderShell();
+}
+window.saveCustomer = saveCustomer;
+
+/* ============================================================
+   ENGINE LIST (per customer)
+   ============================================================ */
+async function renderEngineList(main, customerId){
+  const isAdmin = state.profile.role === 'admin';
+  const { data: customer, error: cErr } = await sb.from('customers').select('*').eq('id', customerId).single();
+  if(cErr || !customer){ main.innerHTML = `<div class="empty">Couldn't load this customer.</div>`; return; }
+  const { data: engines, error: eErr } = await sb.from('engines').select('*').eq('customer_id', customerId).order('created_at', {ascending:false});
+
+  main.innerHTML = `
+    ${isAdmin ? `<button class="breadcrumb" onclick="goHome()">‹ All customers</button>` : ''}
+    <span class="eyebrow">CUSTOMER</span>
+    <h2 style="margin:0 0 2px;font-size:20px;">${esc(customer.name)}</h2>
+    <div style="font-size:13px;color:var(--ink-dim);margin-bottom:14px;">${esc(customer.phone||'')} ${customer.phone&&customer.email?'· ':''}${esc(customer.email||'')}</div>
+    ${customer.notes ? `<div class="card" style="font-size:13px;margin-bottom:16px;">${esc(customer.notes)}</div>` : ''}
+
+    <div class="section-head"><h2>Engines</h2></div>
+    <div>
+      ${eErr ? `<div class="empty">Couldn't load engines.</div>` :
+        engines.length ? engines.map(en => `
+        <div class="list-item" onclick="openEngine('${en.id}')">
+          <div>
+            <div class="li-name">${esc(en.label)}</div>
+            <div class="li-sub">${[en.engine_number ? '#'+en.engine_number : null, en.engine_cc, en.car_no ? 'Car '+en.car_no : null, en.case_no ? 'Case '+en.case_no : null].filter(Boolean).map(esc).join(' · ')}</div>
+          </div>
+          <div class="chevron">›</div>
+        </div>
+        `).join('') : `<div class="empty">No engines logged yet${isAdmin ? ' — tap + to add one' : ''}.</div>`
+      }
+    </div>
+    ${isAdmin ? `<button class="fab-add" onclick="openEngineForm('${customerId}')" title="Add engine">+</button>` : ''}
+  `;
+}
+function openEngine(id){ state.view='engine'; state.engineId=id; render(); }
+window.openEngine = openEngine;
+
+/* ============================================================
+   SEARCH — find an engine by number across all customers
+   ============================================================ */
+async function renderSearch(main){
+  main.innerHTML = `
+    <button class="breadcrumb" onclick="goHome()">‹ Back</button>
+    <span class="eyebrow">SHOP</span>
+    <h2 style="margin:0 0 14px;font-size:20px;">Search engines</h2>
+    <input type="text" id="search-input" placeholder="Engine number, label, car no, or case no…" autofocus>
+    <div id="search-results" style="margin-top:16px;"></div>
+  `;
+  const input = document.getElementById('search-input');
+  input.addEventListener('input', debounce(() => runSearch(input.value.trim()), 250));
+  input.focus();
+}
+let _searchDebounce;
+function debounce(fn, ms){ return (...args) => { clearTimeout(_searchDebounce); _searchDebounce = setTimeout(() => fn(...args), ms); }; }
+
+async function runSearch(term){
+  const resultsEl = document.getElementById('search-results');
+  if(!resultsEl) return;
+  if(!term){ resultsEl.innerHTML = ''; return; }
+  resultsEl.innerHTML = `<div class="loading">Searching…</div>`;
+  const orClause = ['engine_number','label','car_no','case_no'].map(f => `${f}.ilike.%${term}%`).join(',');
+  const { data: engines, error } = await sb.from('engines').select('*, customers(id, name)').or(orClause).order('label');
+  if(error){ resultsEl.innerHTML = `<div class="empty">Search error: ${esc(error.message)}</div>`; return; }
+  if(!engines.length){ resultsEl.innerHTML = `<div class="empty">No engines match "${esc(term)}".</div>`; return; }
+  resultsEl.innerHTML = engines.map(en => `
+    <div class="list-item" onclick="openEngine('${en.id}')">
+      <div>
+        <div class="li-name">${esc(en.label)}</div>
+        <div class="li-sub">${[en.engine_number ? '#'+en.engine_number : null, 'Owner: '+en.customers?.name].filter(Boolean).map(esc).join(' · ')}</div>
+      </div>
+      <div class="chevron">›</div>
+    </div>
+  `).join('');
+}
+
+function openEngineForm(customerId){
+  showModal(`
+    <div class="modal-head"><h3 style="margin:0;font-size:16px;">Add engine</h3></div>
+    <label>Label *</label><input type="text" id="f-label" placeholder="e.g. 1600cc Kart Engine">
+    <label>Engine Number</label><input type="text" id="f-engnum" placeholder="e.g. stamped block ID — used for search">
+    <label>Engine / CC</label><input type="text" id="f-cc" placeholder="e.g. 1600cc">
+    <label>Car No</label><input type="text" id="f-carno" placeholder="e.g. 27">
+    <label>Case No</label><input type="text" id="f-caseno" placeholder="e.g. 4521">
+    <div class="modal-actions">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal()">Cancel</button>
+      <button class="btn" style="flex:1" onclick="saveEngine('${customerId}')">Create</button>
+    </div>
+  `);
+}
+window.openEngineForm = openEngineForm;
+async function saveEngine(customerId){
+  const label = document.getElementById('f-label').value.trim();
+  if(!label){ alert('Label is required.'); return; }
+  const payload = {
+    customer_id: customerId,
+    label,
+    engine_number: document.getElementById('f-engnum').value.trim() || null,
+    engine_cc: document.getElementById('f-cc').value.trim() || null,
+    car_no: document.getElementById('f-carno').value.trim() || null,
+    case_no: document.getElementById('f-caseno').value.trim() || null,
+  };
+  const { data: newEngine, error } = await sb.from('engines').insert(payload).select().single();
+  if(error){ alert(error.message); return; }
+  // seed ownership history with the initial owner
+  await sb.from('engine_ownership_history').insert({
+    engine_id: newEngine.id, customer_id: customerId,
+    changed_by_email: state.profile.email,
+  });
+  closeModal();
+  renderShell();
+}
+window.saveEngine = saveEngine;
+
+/* ============================================================
+   REBUILD LIST (per engine, sorted by date)
+   ============================================================ */
+async function renderRebuildList(main, engineId){
+  const isAdmin = state.profile.role === 'admin';
+  const { data: engine, error: enErr } = await sb.from('engines').select('*, customers(id, name)').eq('id', engineId).single();
+  if(enErr || !engine){ main.innerHTML = `<div class="empty">Couldn't load this engine.</div>`; return; }
+  const { data: rebuilds, error: rErr } = await sb.from('rebuilds').select('*').eq('engine_id', engineId).order('rebuild_date', {ascending:false});
+
+  let historyHtml = '';
+  if(isAdmin){
+    const { data: history } = await sb.from('engine_ownership_history').select('*, customers(name)').eq('engine_id', engineId).order('from_date', {ascending:true});
+    if(history && history.length > 1){
+      historyHtml = `
+        <div class="card" style="margin-bottom:16px;font-size:12px;">
+          <div style="color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.05em;font-size:10px;margin-bottom:8px;font-family:'JetBrains Mono',monospace;">Ownership history</div>
+          ${history.map(hrow => `
+            <div style="padding:3px 0;">${esc(hrow.customers?.name||'Unknown')} — ${fmtDate(hrow.from_date)} ${hrow.to_date ? '→ '+fmtDate(hrow.to_date) : '→ present'}</div>
+          `).join('')}
+        </div>`;
+    }
+  }
+
+  main.innerHTML = `
+    <button class="breadcrumb" onclick="openCustomer('${engine.customers.id}')">‹ ${esc(engine.customers.name)}</button>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+      <div>
+        <span class="eyebrow">ENGINE</span>
+        <h2 style="margin:0 0 2px;font-size:20px;">${esc(engine.label)}</h2>
+        <div style="font-size:13px;color:var(--ink-dim);margin-bottom:14px;">
+          ${[engine.engine_number ? '#'+engine.engine_number : null, engine.engine_cc, engine.car_no ? 'Car '+engine.car_no : null, engine.case_no ? 'Case '+engine.case_no : null].filter(Boolean).map(esc).join(' · ')}
+        </div>
+      </div>
+      ${isAdmin ? `<button class="btn btn-secondary btn-sm" onclick="openTransferForm('${engine.id}', '${engine.customers.id}')">Transfer owner</button>` : ''}
+    </div>
+
+    ${historyHtml}
+
+    <div class="section-head"><h2>Rebuilds</h2></div>
+    <div>
+      ${rErr ? `<div class="empty">Couldn't load rebuilds.</div>` :
+        rebuilds.length ? rebuilds.map(rb => `
+        <div class="list-item" onclick="openRebuild('${rb.id}')">
+          <div>
+            <div class="li-name">${fmtDate(rb.rebuild_date)}</div>
+            <div class="li-sub">Rebuild</div>
+          </div>
+          <span class="status-badge status-${rb.status}">${rb.status}</span>
+        </div>
+        `).join('') : `<div class="empty">No rebuilds logged yet${isAdmin ? ' — tap + to start one' : ''}.</div>`
+      }
+    </div>
+    ${isAdmin ? `<button class="fab-add" onclick="openRebuildForm('${engineId}')" title="Add rebuild">+</button>` : ''}
+  `;
+}
+
+async function openTransferForm(engineId, currentCustomerId){
+  const { data: customers, error } = await sb.from('customers').select('id, name').order('name');
+  if(error){ alert(error.message); return; }
+  const options = customers.filter(c => c.id !== currentCustomerId)
+    .map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  showModal(`
+    <div class="modal-head"><h3 style="margin:0;font-size:16px;">Transfer engine</h3></div>
+    <p style="font-size:13px;color:var(--ink-dim);">Moves this engine — and its entire rebuild history — to a different customer. Useful if it's been sold.</p>
+    <label>New owner *</label>
+    <select id="f-new-owner">${options || '<option value="">No other customers yet</option>'}</select>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal()">Cancel</button>
+      <button class="btn" style="flex:1" onclick="doTransfer('${engineId}')">Transfer</button>
+    </div>
+  `);
+}
+window.openTransferForm = openTransferForm;
+async function doTransfer(engineId){
+  const newCustomerId = document.getElementById('f-new-owner').value;
+  if(!newCustomerId){ alert('Choose a customer to transfer to.'); return; }
+  await sb.from('engine_ownership_history')
+    .update({ to_date: new Date().toISOString() })
+    .eq('engine_id', engineId)
+    .is('to_date', null);
+  const { error: histErr } = await sb.from('engine_ownership_history').insert({
+    engine_id: engineId, customer_id: newCustomerId, changed_by_email: state.profile.email,
+  });
+  if(histErr){ alert(histErr.message); return; }
+  const { error } = await sb.from('engines').update({ customer_id: newCustomerId }).eq('id', engineId);
+  if(error){ alert(error.message); return; }
+  closeModal();
+  openCustomer(newCustomerId);
+}
+window.doTransfer = doTransfer;
+function openRebuild(id){ state.view='rebuild'; state.rebuildId=id; state.rebuildTab='sheet'; render(); }
+window.openRebuild = openRebuild;
+
+function openRebuildForm(engineId){
+  showModal(`
+    <div class="modal-head"><h3 style="margin:0;font-size:16px;">New rebuild</h3></div>
+    <label>Date</label><input type="date" id="f-date" value="${new Date().toISOString().slice(0,10)}">
+    <div class="modal-actions">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal()">Cancel</button>
+      <button class="btn" style="flex:1" onclick="saveRebuild('${engineId}')">Create</button>
+    </div>
+  `);
+}
+window.openRebuildForm = openRebuildForm;
+async function saveRebuild(engineId){
+  const payload = {
+    engine_id: engineId,
+    rebuild_date: document.getElementById('f-date').value || null,
+  };
+  const { error } = await sb.from('rebuilds').insert(payload);
+  if(error){ alert(error.message); return; }
+  closeModal();
+  renderShell();
+}
+window.saveRebuild = saveRebuild;
+
+/* ============================================================
+   REBUILD DETAIL — tabs: spec sheet / notes / photos
+   ============================================================ */
+async function renderRebuildDetail(main, rebuildId){
+  const isAdmin = state.profile.role === 'admin';
+  const { data: rebuild, error } = await sb.from('rebuilds').select('*, engines(id, label, customer_id)').eq('id', rebuildId).single();
+  if(error || !rebuild){ main.innerHTML = `<div class="empty">Couldn't load this rebuild.</div>`; return; }
+
+  main.innerHTML = `
+    <button class="breadcrumb" onclick="openEngine('${rebuild.engines.id}')">‹ ${esc(rebuild.engines.label)}</button>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+      <div>
+        <span class="eyebrow">REBUILD</span>
+        <h2 style="margin:0 0 2px;font-size:20px;">${fmtDate(rebuild.rebuild_date)}</h2>
+      </div>
+      ${isAdmin ? `
+        <select id="status-select" class="status-badge status-${rebuild.status}" style="background:var(--surface);width:auto;padding:6px 8px;" onchange="updateStatus('${rebuild.id}', this.value)">
+          ${['Teardown','Machining','Assembly','Dyno','Complete'].map(s=>`<option value="${s}" ${s===rebuild.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+      ` : `<span class="status-badge status-${rebuild.status}">${rebuild.status}</span>`}
+    </div>
+
+    <div class="tabs" style="margin-top:18px;">
+      <button class="tab ${state.rebuildTab==='sheet'?'active':''}" onclick="switchTab('sheet')">Spec sheet</button>
+      <button class="tab ${state.rebuildTab==='notes'?'active':''}" onclick="switchTab('notes')">Notes</button>
+      <button class="tab ${state.rebuildTab==='photos'?'active':''}" onclick="switchTab('photos')">Photos</button>
+    </div>
+    <div id="tab-content"><div class="loading">Loading…</div></div>
+  `;
+  loadTab(rebuildId, rebuild);
+}
+window.switchTab = function(tab){ state.rebuildTab = tab; render(); };
+async function updateStatus(rebuildId, status){
+  await sb.from('rebuilds').update({status}).eq('id', rebuildId);
+}
+window.updateStatus = updateStatus;
+
+async function loadTab(rebuildId, rebuild){
+  if(state.rebuildTab==='sheet') return loadSpecSheet(rebuildId, rebuild);
+  if(state.rebuildTab==='notes') return loadNotes(rebuildId);
+  if(state.rebuildTab==='photos') return loadPhotos(rebuildId);
+}
+
+/* ---------- SPEC SHEET (matches the paper form) ---------- */
+const CYL_FIELDS = [
+  ['cc', "CC's"],
+  ['stroke', 'Stroke'],
+  ['main_bearing', 'Main Bearing Clearance'],
+  ['big_end_bearing', 'Big End Bearing Clearance'],
+  ['cam_bearing', 'Cam Bearing Clearance'],
+  ['crank_main_size', 'Crank Main Size'],
+  ['crank_big_end_size', 'Crank Big End Size'],
+];
+const WEIGHT_FIELDS = [
+  ['crank_weight_kg', 'Crank Weight', 'Kg'],
+  ['flywheel_weight_kg', 'Flywheel Weight', 'Kg'],
+  ['conrod_weight_g', 'Conrod Weight', 'G'],
+  ['piston_weight_g', 'Piston Weight', 'G'],
+  ['cam_timing_deg', 'Cam Timing', 'Deg'],
+  ['deck_height', 'Deck Height', ''],
+];
+
+async function loadSpecSheet(rebuildId, rebuild){
+  const isAdmin = state.profile.role === 'admin';
+  const el = document.getElementById('tab-content');
+  if(!rebuild){
+    const { data } = await sb.from('rebuilds').select('*').eq('id', rebuildId).single();
+    rebuild = data;
+  }
+  const { data: vrows, error } = await sb.from('rebuild_valve_rows').select('*').eq('rebuild_id', rebuildId).order('position');
+  if(error){ el.innerHTML = `<div class="empty">Couldn't load spec sheet.</div>`; return; }
+  const dis = isAdmin ? '' : 'readonly';
+
+  el.innerHTML = `
+    <div class="spec-section">
+      <div class="spec-section-head">Weights &amp; Timing</div>
+      <div class="spec-section-body">
+        <div class="field-row cols2">
+          ${WEIGHT_FIELDS.map(([key,label,unit]) => `
+            <div class="field">
+              <label>${label}${unit?`<span class="unit">(${unit})</span>`:''}</label>
+              <input type="text" id="sf-${key}" value="${esc(v(rebuild[key]))}" ${dis}>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="spec-section">
+      <div class="spec-section-head">Per Cylinder</div>
+      <div class="spec-section-body">
+        <div class="field-row cols4" style="margin-bottom:2px;">
+          <div class="col-label">1</div><div class="col-label">2</div><div class="col-label">3</div><div class="col-label">4</div>
+        </div>
+        ${CYL_FIELDS.map(([key,label]) => `
+          <div style="margin-bottom:10px;">
+            <label style="margin:0 0 4px;">${label}</label>
+            <div class="field-row cols4">
+              ${[1,2,3,4].map(n => `<input type="text" id="sf-${key}_${n}" value="${esc(v(rebuild[key+'_'+n]))}" ${dis}>`).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="spec-section">
+      <div class="spec-section-head">Valve Lift</div>
+      <div class="spec-section-body">
+        <div class="vlift-wrap">
+          <table class="vlift-table">
+            <thead><tr>
+              <th>1 EX</th><th>1 IN</th><th>2 IN</th><th>2 EX</th>
+              <th>3 EX</th><th>3 IN</th><th>4 IN</th><th>4 EX</th>
+              ${isAdmin ? '<th></th>' : ''}
+            </tr></thead>
+            <tbody id="vlift-body">
+              ${vrows.map(r => vliftRowHtml(r, isAdmin)).join('')}
+            </tbody>
+          </table>
+        </div>
+        ${isAdmin ? `<button class="btn btn-secondary btn-sm" style="margin-top:10px;" onclick="addVliftRow('${rebuildId}')">+ Add row</button>` : (vrows.length===0 ? `<div class="empty" style="margin-top:10px;">No readings yet.</div>` : '')}
+      </div>
+    </div>
+
+    <div class="spec-section">
+      <div class="spec-section-head">Pushrod Length</div>
+      <div class="spec-section-body">
+        <div class="field-row cols4" style="margin-bottom:2px;">
+          <div class="col-label">1</div><div class="col-label">2</div><div class="col-label">3</div><div class="col-label">4</div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="margin:0 0 4px;">In</label>
+          <div class="field-row cols4">
+            ${[1,2,3,4].map(n => `<input type="text" id="sf-pushrod_in_${n}" value="${esc(v(rebuild['pushrod_in_'+n]))}" ${dis}>`).join('')}
+          </div>
+        </div>
+        <div>
+          <label style="margin:0 0 4px;">Ex</label>
+          <div class="field-row cols4">
+            ${[1,2,3,4].map(n => `<input type="text" id="sf-pushrod_ex_${n}" value="${esc(v(rebuild['pushrod_ex_'+n]))}" ${dis}>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec-section">
+      <div class="spec-section-head">Head &amp; Seals</div>
+      <div class="spec-section-body">
+        <div class="field-row cols2">
+          <div class="field"><label>Head 1+2</label><input type="text" id="sf-head_1_2" value="${esc(v(rebuild.head_1_2))}" ${dis}></div>
+          <div class="field"><label>Head 3+4</label><input type="text" id="sf-head_3_4" value="${esc(v(rebuild.head_3_4))}" ${dis}></div>
+        </div>
+        <div class="field-row cols2">
+          <div class="field"><label>Main Case Seal</label><input type="text" id="sf-main_case_seal" value="${esc(v(rebuild.main_case_seal))}" ${dis}></div>
+          <div class="field"><label>Sealer</label><input type="text" id="sf-sealer" value="${esc(v(rebuild.sealer))}" ${dis}></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec-section">
+      <div class="spec-section-head">Piston</div>
+      <div class="spec-section-body">
+        <div class="field-row cols2">
+          <div class="field"><label>Piston to Bore</label><input type="text" id="sf-piston_to_bore" value="${esc(v(rebuild.piston_to_bore))}" ${dis}></div>
+          <div class="field"><label>Piston Size</label><input type="text" id="sf-piston_size" value="${esc(v(rebuild.piston_size))}" ${dis}></div>
+        </div>
+      </div>
+    </div>
+
+    ${isAdmin ? `
+    <div class="save-bar">
+      <button class="btn" onclick="saveSpecSheet('${rebuildId}')">Save spec sheet</button>
+      <span class="save-status" id="save-status"></span>
+    </div>` : ''}
+  `;
+}
+
+function vliftRowHtml(r, isAdmin){
+  const dis = isAdmin ? '' : 'readonly';
+  const cols = ['c1_ex','c1_in','c2_in','c2_ex','c3_ex','c3_in','c4_in','c4_ex'];
+  return `<tr data-id="${r.id}">
+    ${cols.map(c => `<td><input type="text" value="${esc(v(r[c]))}" data-field="${c}" ${dis} onchange="saveVliftCell(this)"></td>`).join('')}
+    ${isAdmin ? `<td><button class="icon-btn" onclick="deleteVliftRow('${r.id}')" title="Remove row">✕</button></td>` : ''}
+  </tr>`;
+}
+async function addVliftRow(rebuildId){
+  const { data: existing } = await sb.from('rebuild_valve_rows').select('position').eq('rebuild_id', rebuildId).order('position',{ascending:false}).limit(1);
+  const nextPos = existing && existing.length ? existing[0].position + 1 : 0;
+  const { error } = await sb.from('rebuild_valve_rows').insert({ rebuild_id: rebuildId, position: nextPos });
+  if(error){ alert(error.message); return; }
+  loadSpecSheet(rebuildId);
+}
+window.addVliftRow = addVliftRow;
+async function saveVliftCell(inputEl){
+  const row = inputEl.closest('tr');
+  const id = row.dataset.id;
+  const field = inputEl.dataset.field;
+  const { error } = await sb.from('rebuild_valve_rows').update({ [field]: inputEl.value }).eq('id', id);
+  if(error){ alert(error.message); }
+}
+window.saveVliftCell = saveVliftCell;
+async function deleteVliftRow(id){
+  if(!confirm('Remove this row?')) return;
+  await sb.from('rebuild_valve_rows').delete().eq('id', id);
+  loadSpecSheet(state.rebuildId);
+}
+window.deleteVliftRow = deleteVliftRow;
+
+async function saveSpecSheet(rebuildId){
+  const statusEl = document.getElementById('save-status');
+  statusEl.textContent = 'Saving…';
+  const payload = {};
+  WEIGHT_FIELDS.forEach(([key]) => { payload[key] = document.getElementById('sf-'+key).value.trim() || null; });
+  CYL_FIELDS.forEach(([key]) => { [1,2,3,4].forEach(n => { payload[key+'_'+n] = document.getElementById('sf-'+key+'_'+n).value.trim() || null; }); });
+  [1,2,3,4].forEach(n => {
+    payload['pushrod_in_'+n] = document.getElementById('sf-pushrod_in_'+n).value.trim() || null;
+    payload['pushrod_ex_'+n] = document.getElementById('sf-pushrod_ex_'+n).value.trim() || null;
+  });
+  ['head_1_2','head_3_4','main_case_seal','sealer','piston_to_bore','piston_size'].forEach(key => {
+    payload[key] = document.getElementById('sf-'+key).value.trim() || null;
+  });
+  const { error } = await sb.from('rebuilds').update(payload).eq('id', rebuildId);
+  statusEl.textContent = error ? ('Error: '+error.message) : 'Saved ✓';
+  if(!error) setTimeout(() => { if(statusEl) statusEl.textContent=''; }, 2500);
+}
+window.saveSpecSheet = saveSpecSheet;
+
+/* ---------- NOTES ---------- */
+async function loadNotes(rebuildId){
+  const isAdmin = state.profile.role === 'admin';
+  const el = document.getElementById('tab-content');
+  const { data: notes, error } = await sb.from('rebuild_notes').select('*').eq('rebuild_id', rebuildId).order('created_at', {ascending:false});
+  if(error){ el.innerHTML = `<div class="empty">Couldn't load notes.</div>`; return; }
+
+  el.innerHTML = `
+    ${isAdmin ? `
+    <div class="card" style="margin-bottom:16px;">
+      <label style="margin-top:0;">Add a note</label>
+      <textarea id="new-note" placeholder="e.g. Ran hot at the track after 20 laps — check oil cooler routing before next rebuild."></textarea>
+      <button class="btn btn-sm" style="margin-top:10px;" onclick="addNote('${rebuildId}')">Save note</button>
+    </div>` : ''}
+    ${notes.length ? notes.map(n => `
+      <div class="note-card">
+        <div class="note-body">${esc(n.body)}</div>
+        <div class="note-meta">${fmtDateTime(n.created_at)}${n.created_by_email ? ' · '+esc(n.created_by_email) : ''}</div>
+      </div>
+    `).join('') : `<div class="empty">No notes yet.</div>`}
+  `;
+}
+async function addNote(rebuildId){
+  const body = document.getElementById('new-note').value.trim();
+  if(!body) return;
+  const { error } = await sb.from('rebuild_notes').insert({ rebuild_id: rebuildId, body, created_by_email: state.profile.email });
+  if(error){ alert(error.message); return; }
+  loadNotes(rebuildId);
+}
+window.addNote = addNote;
+
+/* ---------- PHOTOS ---------- */
+async function loadPhotos(rebuildId){
+  const isAdmin = state.profile.role === 'admin';
+  const el = document.getElementById('tab-content');
+  const { data: photos, error } = await sb.from('rebuild_photos').select('*').eq('rebuild_id', rebuildId).order('created_at', {ascending:false});
+  if(error){ el.innerHTML = `<div class="empty">Couldn't load photos.</div>`; return; }
+
+  const urls = photos.map(p => ({...p, url: sb.storage.from('engine-photos').getPublicUrl(p.storage_path).data.publicUrl}));
+
+  el.innerHTML = `
+    ${isAdmin ? `
+    <div class="card" style="margin-bottom:16px;">
+      <label style="margin-top:0;">Add photos</label>
+      <input type="file" id="photo-input" accept="image/*" capture="environment" multiple>
+      <input type="text" id="photo-caption" placeholder="Caption (optional, applied to all selected)" style="margin-top:8px;">
+      <button class="btn btn-sm" style="margin-top:10px;" onclick="uploadPhotos('${rebuildId}')">Upload</button>
+      <div id="upload-status" style="font-size:12px;color:var(--ink-dim);margin-top:8px;"></div>
+    </div>` : ''}
+    <div class="photo-grid">
+      ${urls.map(p => `
+        <div class="photo-thumb" onclick="viewPhoto('${p.url}')">
+          <img src="${p.url}" loading="lazy">
+          ${p.caption ? `<div class="photo-cap">${esc(p.caption)}</div>` : ''}
+        </div>
+      `).join('')}
+    </div>
+    ${photos.length===0 ? `<div class="empty">No photos yet.</div>` : ''}
+  `;
+}
+async function uploadPhotos(rebuildId){
+  const input = document.getElementById('photo-input');
+  const caption = document.getElementById('photo-caption').value.trim();
+  const statusEl = document.getElementById('upload-status');
+  const files = input.files;
+  if(!files || files.length===0){ return; }
+  statusEl.textContent = `Uploading 0 / ${files.length}…`;
+  let done = 0;
+  for(const file of files){
+    const path = `${rebuildId}/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${file.name}`;
+    const { error: upErr } = await sb.storage.from('engine-photos').upload(path, file);
+    if(upErr){ statusEl.textContent = `Error: ${upErr.message}`; continue; }
+    await sb.from('rebuild_photos').insert({ rebuild_id: rebuildId, storage_path: path, caption: caption || null });
+    done++;
+    statusEl.textContent = `Uploading ${done} / ${files.length}…`;
+  }
+  statusEl.textContent = `Done.`;
+  loadPhotos(rebuildId);
+}
+window.uploadPhotos = uploadPhotos;
+function viewPhoto(url){
+  const overlay = document.createElement('div');
+  overlay.className = 'photo-full-overlay';
+  overlay.onclick = () => overlay.remove();
+  overlay.innerHTML = `<img src="${url}">`;
+  document.body.appendChild(overlay);
+}
+window.viewPhoto = viewPhoto;
+
+/* ============================================================
+   MODAL HELPERS
+   ============================================================ */
+function showModal(innerHtml){
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay';
+  overlay.id = 'modal-overlay';
+  overlay.onclick = (e) => { if(e.target === overlay) closeModal(); };
+  overlay.innerHTML = `<div class="modal">${innerHtml}</div>`;
+  document.body.appendChild(overlay);
+}
+function closeModal(){
+  const el = document.getElementById('modal-overlay');
+  if(el) el.remove();
+}
+window.closeModal = closeModal;
+
+/* ============================================================
+   PWA install (service worker)
+   ============================================================ */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+init();
+</script>
+</body>
+</html>
