@@ -14,7 +14,7 @@
      SETUP: put your Supabase project values here (see README.md)
      ============================================================ -->
 <script>
-  window.SUPABASE_URL = "https://gkdbhedeczgstzsrlawz.supabase.co";
+  window.SUPABASE_URL = "https://gkdbhedeczgstzsrlawz.supabase.co/rest/v1/";
   window.SUPABASE_ANON_KEY = "sb_publishable_3X0bT9ZrOq0LYN3Xul_cJQ_coo1S837";
 </script>
 
@@ -879,13 +879,16 @@ async function loadSpecSheet(rebuildId, rebuild){
     </div>
 
     <div class="spec-section">
-      <div class="spec-section-head">Case &amp; Sealer</div>
+      <div class="spec-section-head">Head &amp; Seals</div>
       <div class="spec-section-body">
         <div class="field-row cols2">
-          <div class="field"><label>Case 1+2</label><input type="text" id="sf-case_1_2" value="${esc(v(rebuild.case_1_2))}" ${dis}></div>
-          <div class="field"><label>Case 3+4</label><input type="text" id="sf-case_3_4" value="${esc(v(rebuild.case_3_4))}" ${dis}></div>
+          <div class="field"><label>Head 1+2</label><input type="text" id="sf-head_1_2" value="${esc(v(rebuild.head_1_2))}" ${dis}></div>
+          <div class="field"><label>Head 3+4</label><input type="text" id="sf-head_3_4" value="${esc(v(rebuild.head_3_4))}" ${dis}></div>
         </div>
-        <div class="field"><label>Sealer</label><input type="text" id="sf-sealer" value="${esc(v(rebuild.sealer))}" ${dis}></div>
+        <div class="field-row cols2">
+          <div class="field"><label>Main Case Seal</label><input type="text" id="sf-main_case_seal" value="${esc(v(rebuild.main_case_seal))}" ${dis}></div>
+          <div class="field"><label>Sealer</label><input type="text" id="sf-sealer" value="${esc(v(rebuild.sealer))}" ${dis}></div>
+        </div>
       </div>
     </div>
 
@@ -948,7 +951,7 @@ async function saveSpecSheet(rebuildId){
     payload['pushrod_in_'+n] = document.getElementById('sf-pushrod_in_'+n).value.trim() || null;
     payload['pushrod_ex_'+n] = document.getElementById('sf-pushrod_ex_'+n).value.trim() || null;
   });
-  ['case_1_2','case_3_4','sealer','piston_to_bore','piston_size'].forEach(key => {
+  ['head_1_2','head_3_4','main_case_seal','sealer','piston_to_bore','piston_size'].forEach(key => {
     payload[key] = document.getElementById('sf-'+key).value.trim() || null;
   });
   const { error } = await sb.from('rebuilds').update(payload).eq('id', rebuildId);
