@@ -1,0 +1,11 @@
+{
+  "name": "Build Sheet — Engine Rebuild Tracker",
+  "short_name": "Build Sheet",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1B1D1F",
+  "theme_color": "#1B1D1F",
+  "icons": [
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
