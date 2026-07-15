@@ -1,6 +1,6 @@
 {
-  "name": "Build Sheet — Engine Rebuild Tracker",
-  "short_name": "Build Sheet",
+  "name": "RevBuilt — Engine Build Management",
+  "short_name": "RevBuilt",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1B1D1F",

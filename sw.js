@@ -1,4 +1,4 @@
-const CACHE = 'build-sheet-v1';
+const CACHE = 'revbuilt-v2';
 const SHELL = ['./index.html', './manifest.json'];
 
 self.addEventListener('install', (e) => {

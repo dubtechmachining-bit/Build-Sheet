@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Build Sheet</title>
+<title>RevBuilt</title>
 <meta name="theme-color" content="#1B1D1F">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
@@ -68,12 +68,12 @@
   }
   .brand{display:flex;align-items:center;gap:10px;}
   .brand-mark{
-    width:34px;height:34px;border-radius:4px;
-    background:var(--accent);color:#1B1D1F;
+    width:34px;height:34px;border-radius:6px;
+    background:#000;border:1px solid var(--border);
     display:flex;align-items:center;justify-content:center;
-    font-family:'Oswald',sans-serif;font-weight:700;font-size:16px;
-    flex-shrink:0;
+    overflow:hidden;flex-shrink:0;
   }
+  .brand-mark img{width:100%;height:100%;object-fit:contain;padding:2px;}
   .brand-name{font-size:15px;letter-spacing:0.06em;}
   .brand-sub{font-size:10px;color:var(--ink-dim);letter-spacing:0.08em;margin-top:1px;}
   .topbar-right{display:flex;align-items:center;gap:12px;}
@@ -261,6 +261,14 @@
     border:1px solid var(--border);position:relative;background:var(--surface-raised);
   }
   .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .photo-del-btn{
+    position:absolute;top:4px;right:4px;z-index:2;
+    width:22px;height:22px;border-radius:50%;
+    background:rgba(0,0,0,0.65);border:1px solid rgba(255,255,255,0.2);
+    color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;
+    padding:0;
+  }
+  .photo-del-btn:hover{background:var(--danger);}
   .photo-cap{
     position:absolute;bottom:0;left:0;right:0;
     background:linear-gradient(transparent,rgba(0,0,0,0.75));
@@ -361,7 +369,7 @@ function renderSetPassword(){
   <div class="login-wrap">
     <div class="login-card">
       <div class="login-logo">
-        <div class="brand-mark">EB</div>
+        <div class="brand-mark"><img src="icon.png" alt="RevBuilt"></div>
         <h1 style="font-size:18px;margin:0 0 4px;">Set your password</h1>
         <div style="font-size:12px;color:var(--ink-dim);letter-spacing:0.05em;">CHOOSE A PASSWORD TO FINISH SETTING UP YOUR LOGIN</div>
       </div>
@@ -428,9 +436,9 @@ function topbar(){
   return `
   <div class="topbar">
     <div class="brand" style="cursor:pointer" onclick="goHome()">
-      <div class="brand-mark">EB</div>
+      <div class="brand-mark"><img src="icon.png" alt="RevBuilt"></div>
       <div>
-        <div class="brand-name">BUILD SHEET</div>
+        <div class="brand-name">REV BUILT</div>
         <div class="brand-sub">${isAdmin ? 'SHOP ADMIN' : 'CUSTOMER VIEW'}</div>
       </div>
     </div>
@@ -468,9 +476,9 @@ function renderLogin(){
   <div class="login-wrap">
     <div class="login-card">
       <div class="login-logo">
-        <div class="brand-mark">EB</div>
-        <h1 style="font-size:18px;margin:0 0 4px;">Build Sheet</h1>
-        <div style="font-size:12px;color:var(--ink-dim);letter-spacing:0.05em;">ENGINE REBUILD TRACKER</div>
+        <div class="brand-mark"><img src="icon.png" alt="RevBuilt"></div>
+        <h1 style="font-size:18px;margin:0 0 4px;">RevBuilt</h1>
+        <div style="font-size:12px;color:var(--ink-dim);letter-spacing:0.05em;">ENGINE BUILD MANAGEMENT</div>
       </div>
       <div class="card">
         <label>Email</label>
@@ -564,12 +572,39 @@ async function renderEngineList(main, customerId){
   if(cErr || !customer){ main.innerHTML = `<div class="empty">Couldn't load this customer.</div>`; return; }
   const { data: engines, error: eErr } = await sb.from('engines').select('*').eq('customer_id', customerId).order('created_at', {ascending:false});
 
+  let portalHtml = '';
+  if(isAdmin){
+    const { data: linkedLogins } = await sb.from('profiles').select('email').eq('customer_id', customerId);
+    if(linkedLogins && linkedLogins.length){
+      portalHtml = `
+        <div class="card" style="margin-bottom:16px;font-size:13px;">
+          <div style="color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.05em;font-size:10px;margin-bottom:6px;font-family:'JetBrains Mono',monospace;">Portal access</div>
+          ${linkedLogins.map(l => `<div>✓ ${esc(l.email)}</div>`).join('')}
+        </div>`;
+    } else {
+      portalHtml = `
+        <div class="card" style="margin-bottom:16px;">
+          <div style="color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.05em;font-size:10px;margin-bottom:8px;font-family:'JetBrains Mono',monospace;">Portal access</div>
+          <label style="margin-top:0;">Invite this customer to view their own build sheets</label>
+          <input type="email" id="invite-email" placeholder="customer@example.com" value="${esc(customer.email||'')}">
+          <button class="btn btn-sm" style="margin-top:10px;" onclick="inviteCustomerPortal('${customerId}')">Send invite</button>
+          <div id="invite-status" style="font-size:12px;color:var(--ink-dim);margin-top:8px;"></div>
+        </div>`;
+    }
+  }
+
   main.innerHTML = `
     ${isAdmin ? `<button class="breadcrumb" onclick="goHome()">‹ All customers</button>` : ''}
-    <span class="eyebrow">CUSTOMER</span>
-    <h2 style="margin:0 0 2px;font-size:20px;">${esc(customer.name)}</h2>
-    <div style="font-size:13px;color:var(--ink-dim);margin-bottom:14px;">${esc(customer.phone||'')} ${customer.phone&&customer.email?'· ':''}${esc(customer.email||'')}</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+      <div>
+        <span class="eyebrow">CUSTOMER</span>
+        <h2 style="margin:0 0 2px;font-size:20px;">${esc(customer.name)}</h2>
+        <div style="font-size:13px;color:var(--ink-dim);margin-bottom:14px;">${esc(customer.phone||'')} ${customer.phone&&customer.email?'· ':''}${esc(customer.email||'')}</div>
+      </div>
+      ${isAdmin ? `<button class="btn btn-danger btn-sm" onclick="deleteCustomer('${customerId}')">Delete</button>` : ''}
+    </div>
     ${customer.notes ? `<div class="card" style="font-size:13px;margin-bottom:16px;">${esc(customer.notes)}</div>` : ''}
+    ${portalHtml}
 
     <div class="section-head"><h2>Engines</h2></div>
     <div>
@@ -588,6 +623,40 @@ async function renderEngineList(main, customerId){
     ${isAdmin ? `<button class="fab-add" onclick="openEngineForm('${customerId}')" title="Add engine">+</button>` : ''}
   `;
 }
+async function inviteCustomerPortal(customerId){
+  const emailInput = document.getElementById('invite-email');
+  const statusEl = document.getElementById('invite-status');
+  const email = emailInput.value.trim();
+  if(!email){ statusEl.textContent = 'Enter an email first.'; return; }
+  statusEl.textContent = 'Sending invite…';
+  const { data, error } = await sb.functions.invoke('invite-customer', {
+    body: { email, customer_id: customerId },
+  });
+  if(error){ statusEl.textContent = `Error: ${error.message}`; return; }
+  if(data?.error){ statusEl.textContent = `Error: ${data.error}`; return; }
+  statusEl.textContent = 'Invite sent ✓';
+  setTimeout(() => renderShell(), 1200);
+}
+window.inviteCustomerPortal = inviteCustomerPortal;
+
+async function deleteCustomer(customerId){
+  if(!confirm('Delete this customer and everything under them — all engines, rebuilds, spec sheets, notes, and photos? This cannot be undone.')) return;
+  const { data: engines } = await sb.from('engines').select('id').eq('customer_id', customerId);
+  const engineIds = (engines||[]).map(e => e.id);
+  if(engineIds.length){
+    const { data: rebuilds } = await sb.from('rebuilds').select('id').in('engine_id', engineIds);
+    const rebuildIds = (rebuilds||[]).map(r => r.id);
+    if(rebuildIds.length){
+      const { data: photos } = await sb.from('rebuild_photos').select('storage_path').in('rebuild_id', rebuildIds);
+      const paths = (photos||[]).map(p => p.storage_path);
+      if(paths.length) await sb.storage.from('engine-photos').remove(paths);
+    }
+  }
+  const { error } = await sb.from('customers').delete().eq('id', customerId);
+  if(error){ alert(error.message); return; }
+  goHome();
+}
+window.deleteCustomer = deleteCustomer;
 function openEngine(id){ state.view='engine'; state.engineId=id; render(); }
 window.openEngine = openEngine;
 
@@ -700,7 +769,10 @@ async function renderRebuildList(main, engineId){
           ${[engine.engine_number ? '#'+engine.engine_number : null, engine.engine_cc, engine.car_no ? 'Car '+engine.car_no : null, engine.case_no ? 'Case '+engine.case_no : null].filter(Boolean).map(esc).join(' · ')}
         </div>
       </div>
-      ${isAdmin ? `<button class="btn btn-secondary btn-sm" onclick="openTransferForm('${engine.id}', '${engine.customers.id}')">Transfer owner</button>` : ''}
+      ${isAdmin ? `<div style="display:flex;gap:8px;flex-shrink:0;">
+        <button class="btn btn-secondary btn-sm" onclick="openTransferForm('${engine.id}', '${engine.customers.id}')">Transfer owner</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteEngine('${engine.id}', '${engine.customers.id}')">Delete</button>
+      </div>` : ''}
     </div>
 
     ${historyHtml}
@@ -757,6 +829,21 @@ async function doTransfer(engineId){
   openCustomer(newCustomerId);
 }
 window.doTransfer = doTransfer;
+
+async function deleteEngine(engineId, customerId){
+  if(!confirm('Delete this engine and all its rebuild history, spec sheets, notes, and photos? This cannot be undone.')) return;
+  const { data: rebuilds } = await sb.from('rebuilds').select('id').eq('engine_id', engineId);
+  const rebuildIds = (rebuilds||[]).map(r => r.id);
+  if(rebuildIds.length){
+    const { data: photos } = await sb.from('rebuild_photos').select('storage_path').in('rebuild_id', rebuildIds);
+    const paths = (photos||[]).map(p => p.storage_path);
+    if(paths.length) await sb.storage.from('engine-photos').remove(paths);
+  }
+  const { error } = await sb.from('engines').delete().eq('id', engineId);
+  if(error){ alert(error.message); return; }
+  openCustomer(customerId);
+}
+window.deleteEngine = deleteEngine;
 function openRebuild(id){ state.view='rebuild'; state.rebuildId=id; state.rebuildTab='sheet'; render(); }
 window.openRebuild = openRebuild;
 
@@ -799,9 +886,12 @@ async function renderRebuildDetail(main, rebuildId){
         <h2 style="margin:0 0 2px;font-size:20px;">${fmtDate(rebuild.rebuild_date)}</h2>
       </div>
       ${isAdmin ? `
-        <select id="status-select" class="status-badge status-${rebuild.status}" style="background:var(--surface);width:auto;padding:6px 8px;" onchange="updateStatus('${rebuild.id}', this.value)">
-          ${['Teardown','Machining','Assembly','Dyno','Complete'].map(s=>`<option value="${s}" ${s===rebuild.status?'selected':''}>${s}</option>`).join('')}
-        </select>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+          <select id="status-select" class="status-badge status-${rebuild.status}" style="background:var(--surface);width:auto;padding:6px 8px;" onchange="updateStatus('${rebuild.id}', this.value)">
+            ${['Teardown','Machining','Assembly','Dyno','Complete'].map(s=>`<option value="${s}" ${s===rebuild.status?'selected':''}>${s}</option>`).join('')}
+          </select>
+          <button class="btn btn-danger btn-sm" onclick="deleteRebuild('${rebuild.id}', '${rebuild.engines.id}')">Delete</button>
+        </div>
       ` : `<span class="status-badge status-${rebuild.status}">${rebuild.status}</span>`}
     </div>
 
@@ -819,6 +909,17 @@ async function updateStatus(rebuildId, status){
   await sb.from('rebuilds').update({status}).eq('id', rebuildId);
 }
 window.updateStatus = updateStatus;
+
+async function deleteRebuild(rebuildId, engineId){
+  if(!confirm('Delete this rebuild — its spec sheet, notes, and photos? This cannot be undone.')) return;
+  const { data: photos } = await sb.from('rebuild_photos').select('storage_path').eq('rebuild_id', rebuildId);
+  const paths = (photos||[]).map(p => p.storage_path);
+  if(paths.length) await sb.storage.from('engine-photos').remove(paths);
+  const { error } = await sb.from('rebuilds').delete().eq('id', rebuildId);
+  if(error){ alert(error.message); return; }
+  openEngine(engineId);
+}
+window.deleteRebuild = deleteRebuild;
 
 async function loadTab(rebuildId, rebuild){
   if(state.rebuildTab==='sheet') return loadSpecSheet(rebuildId, rebuild);
@@ -1026,12 +1127,21 @@ async function loadNotes(rebuildId){
     </div>` : ''}
     ${notes.length ? notes.map(n => `
       <div class="note-card">
-        <div class="note-body">${esc(n.body)}</div>
+        <div style="display:flex;justify-content:space-between;gap:10px;">
+          <div class="note-body">${esc(n.body)}</div>
+          ${isAdmin ? `<button class="icon-btn" style="flex-shrink:0;" onclick="deleteNote('${n.id}')" title="Delete note">✕</button>` : ''}
+        </div>
         <div class="note-meta">${fmtDateTime(n.created_at)}${n.created_by_email ? ' · '+esc(n.created_by_email) : ''}</div>
       </div>
     `).join('') : `<div class="empty">No notes yet.</div>`}
   `;
 }
+async function deleteNote(id){
+  if(!confirm('Delete this note?')) return;
+  await sb.from('rebuild_notes').delete().eq('id', id);
+  loadNotes(state.rebuildId);
+}
+window.deleteNote = deleteNote;
 async function addNote(rebuildId){
   const body = document.getElementById('new-note').value.trim();
   if(!body) return;
@@ -1063,6 +1173,7 @@ async function loadPhotos(rebuildId){
       ${urls.map(p => `
         <div class="photo-thumb" onclick="viewPhoto('${p.url}')">
           <img src="${p.url}" loading="lazy">
+          ${isAdmin ? `<button class="photo-del-btn" onclick="event.stopPropagation(); deletePhoto('${p.id}', '${p.storage_path}')" title="Delete photo">✕</button>` : ''}
           ${p.caption ? `<div class="photo-cap">${esc(p.caption)}</div>` : ''}
         </div>
       `).join('')}
@@ -1070,6 +1181,13 @@ async function loadPhotos(rebuildId){
     ${photos.length===0 ? `<div class="empty">No photos yet.</div>` : ''}
   `;
 }
+async function deletePhoto(id, storagePath){
+  if(!confirm('Delete this photo?')) return;
+  await sb.storage.from('engine-photos').remove([storagePath]);
+  await sb.from('rebuild_photos').delete().eq('id', id);
+  loadPhotos(state.rebuildId);
+}
+window.deletePhoto = deletePhoto;
 async function uploadPhotos(rebuildId){
   const input = document.getElementById('photo-input');
   const caption = document.getElementById('photo-caption').value.trim();
