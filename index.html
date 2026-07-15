@@ -215,6 +215,20 @@
     font-size:11px;color:var(--ink-dim);margin-bottom:4px;
   }
 
+  .radio-toggle{display:flex;gap:8px;flex-wrap:wrap;}
+  .radio-toggle-option{
+    display:flex;align-items:center;gap:6px;
+    background:var(--surface-raised);border:1px solid var(--border);
+    border-radius:6px;padding:9px 14px;font-size:13px;cursor:pointer;
+    flex:1;min-width:140px;justify-content:center;
+  }
+  .radio-toggle-option:has(input:checked){
+    border-color:var(--accent);color:var(--accent);background:rgba(232,163,61,0.08);
+  }
+  .radio-toggle-option input{width:auto;accent-color:var(--accent);}
+  .radio-toggle-option input:disabled{cursor:default;}
+  .radio-toggle-option:has(input:disabled){cursor:default;opacity:0.75;}
+
   .vlift-table{width:100%;border-collapse:collapse;}
   .vlift-table th{
     font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent-2);
@@ -222,12 +236,28 @@
     border-bottom:1px solid var(--border);
   }
   .vlift-table td{padding:3px;border-bottom:1px solid var(--border);}
+  .vlift-cell{display:flex;flex-direction:column;min-width:78px;}
   .vlift-table input{
-    background:none;border:none;padding:5px 4px;
+    background:none;border:none;padding:5px 4px 0;
     font-family:'JetBrains Mono',monospace;font-size:12px;width:100%;
+  }
+  .vlift-mm{
+    font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-dim);
+    padding:0 4px 4px;white-space:nowrap;
   }
   .vlift-table input:focus{outline:none;background:var(--surface-raised);}
   .vlift-wrap{overflow-x:auto;}
+  .vlift-cell{transition:background-color .15s;border-radius:4px;}
+  .vlift-cell.vlift-green{background:rgba(121,153,106,0.22);}
+  .vlift-cell.vlift-orange{background:rgba(232,163,61,0.22);}
+  .vlift-cell.vlift-red{background:rgba(194,74,62,0.28);}
+  .legend-dot{
+    display:inline-block;width:8px;height:8px;border-radius:50%;
+    margin-right:4px;vertical-align:middle;
+  }
+  .legend-dot.vlift-green{background:var(--good);}
+  .legend-dot.vlift-orange{background:var(--accent);}
+  .legend-dot.vlift-red{background:var(--danger);}
   .icon-btn{
     background:none;border:none;color:var(--ink-dim);
     font-size:15px;padding:4px 6px;
@@ -969,6 +999,17 @@ async function loadSpecSheet(rebuildId, rebuild){
             </div>
           `).join('')}
         </div>
+        <div class="field" style="margin-top:6px;">
+          <label>Crank Type</label>
+          <div class="radio-toggle">
+            ${['Counterweighted','Standard'].map(opt => `
+              <label class="radio-toggle-option">
+                <input type="radio" name="sf-crank_type" value="${opt}" ${rebuild.crank_type===opt?'checked':''} ${isAdmin?'':'disabled'}>
+                <span>${opt}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
       </div>
     </div>
 
@@ -992,6 +1033,12 @@ async function loadSpecSheet(rebuildId, rebuild){
     <div class="spec-section">
       <div class="spec-section-head">Valve Lift</div>
       <div class="spec-section-body">
+        <div style="font-size:11px;color:var(--ink-dim);margin-bottom:8px;">Enter in thou (inches, up to 5 decimal places) — mm shown alongside</div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:10px;color:var(--ink-dim);margin-bottom:10px;font-family:'JetBrains Mono',monospace;">
+          <span><span class="legend-dot vlift-green"></span> ≥0.003" under max</span>
+          <span><span class="legend-dot vlift-orange"></span> 0.0005"–0.003" under max</span>
+          <span><span class="legend-dot vlift-red"></span> at/over max</span>
+        </div>
         <div class="vlift-wrap">
           <table class="vlift-table">
             <thead><tr>
@@ -1061,11 +1108,45 @@ async function loadSpecSheet(rebuildId, rebuild){
   `;
 }
 
+// Max valve lift specs — used to color-code how close each reading is to the limit
+const MAX_LIFT_MM = { intake: 9.9, exhaust: 9.5 };
+function vliftStatusClass(fieldKey, val){
+  const n = parseFloat(val);
+  if(isNaN(n)) return '';
+  const isIntake = fieldKey.includes('_in');
+  const maxInches = (isIntake ? MAX_LIFT_MM.intake : MAX_LIFT_MM.exhaust) / 25.4;
+  const margin = maxInches - n; // headroom below max, in inches
+  if(margin < 0.0005) return 'vlift-red';
+  if(margin < 0.003) return 'vlift-orange';
+  return 'vlift-green';
+}
+function thouToMm(val){
+  const n = parseFloat(val);
+  if(isNaN(n)) return '';
+  return `(${(n*25.4).toFixed(4)} mm)`;
+}
+function updateMmDisplay(inputEl){
+  const span = inputEl.nextElementSibling;
+  if(span && span.classList.contains('vlift-mm')) span.textContent = thouToMm(inputEl.value);
+  const cell = inputEl.closest('.vlift-cell');
+  if(cell){
+    cell.classList.remove('vlift-green','vlift-orange','vlift-red');
+    const cls = vliftStatusClass(inputEl.dataset.field, inputEl.value);
+    if(cls) cell.classList.add(cls);
+  }
+}
+window.updateMmDisplay = updateMmDisplay;
+
 function vliftRowHtml(r, isAdmin){
   const dis = isAdmin ? '' : 'readonly';
   const cols = ['c1_ex','c1_in','c2_in','c2_ex','c3_ex','c3_in','c4_in','c4_ex'];
   return `<tr data-id="${r.id}">
-    ${cols.map(c => `<td><input type="text" value="${esc(v(r[c]))}" data-field="${c}" ${dis} onchange="saveVliftCell(this)"></td>`).join('')}
+    ${cols.map(c => `<td>
+      <div class="vlift-cell ${vliftStatusClass(c, r[c])}">
+        <input type="text" inputmode="decimal" value="${esc(v(r[c]))}" data-field="${c}" ${dis} onchange="saveVliftCell(this)" oninput="updateMmDisplay(this)">
+        <span class="vlift-mm">${thouToMm(v(r[c]))}</span>
+      </div>
+    </td>`).join('')}
     ${isAdmin ? `<td><button class="icon-btn" onclick="deleteVliftRow('${r.id}')" title="Remove row">✕</button></td>` : ''}
   </tr>`;
 }
@@ -1081,7 +1162,15 @@ async function saveVliftCell(inputEl){
   const row = inputEl.closest('tr');
   const id = row.dataset.id;
   const field = inputEl.dataset.field;
-  const { error } = await sb.from('rebuild_valve_rows').update({ [field]: inputEl.value }).eq('id', id);
+  let value = inputEl.value.trim();
+  // clamp to 5 decimal places if it's a valid number
+  const n = parseFloat(value);
+  if(!isNaN(n) && value.includes('.') && value.split('.')[1].length > 5){
+    value = n.toFixed(5);
+    inputEl.value = value;
+    updateMmDisplay(inputEl);
+  }
+  const { error } = await sb.from('rebuild_valve_rows').update({ [field]: value }).eq('id', id);
   if(error){ alert(error.message); }
 }
 window.saveVliftCell = saveVliftCell;
@@ -1097,6 +1186,8 @@ async function saveSpecSheet(rebuildId){
   statusEl.textContent = 'Saving…';
   const payload = {};
   WEIGHT_FIELDS.forEach(([key]) => { payload[key] = document.getElementById('sf-'+key).value.trim() || null; });
+  const crankTypeChecked = document.querySelector('input[name="sf-crank_type"]:checked');
+  payload.crank_type = crankTypeChecked ? crankTypeChecked.value : null;
   CYL_FIELDS.forEach(([key]) => { [1,2,3,4].forEach(n => { payload[key+'_'+n] = document.getElementById('sf-'+key+'_'+n).value.trim() || null; }); });
   [1,2,3,4].forEach(n => {
     payload['pushrod_in_'+n] = document.getElementById('sf-pushrod_in_'+n).value.trim() || null;
